@@ -43,6 +43,36 @@ class WaveShape:
 
 
 class WaveBuilder:
+    """The WaveBuilder class creates a composite ``synthio`` waveform table
+    from a collection of oscillators. The table is created from a list
+    of oscillator characteristics, sample length, maximum sample value, a
+    lambda factor, and loop smoothing parameters. The resulting waveform
+    table is a ``synthio.ReadableBuffer`` of type ‘h’ (signed 16 bit).
+
+    :param list oscillators: A list of oscillator characteristics. Each
+    oscillator is described as a tuple of wave shape, frequency or
+    overtone ratio, and amplitude. The wave shape is specified by using
+    a member of the ``WaveShape`` class (type: string). The floating point
+    oscillator frequency is defined as either a frequency in Hertz or
+    overtone ratio based on the fundamental (lowest) frequency. The
+    amplitude is a floating point value between 0. and 1.0 although any
+    value is allowed. No default.
+    :param integer table_length: The number of samples contained in the
+    resultant waveform table. No default.
+    :param integer sample_max: The maximum positive value of a sample,
+    limited to a signed 16-bit integer value (0 to 32767). Default is 32767.
+    :param float lambda_factor: The number of fundamental oscillator
+    wavelengths per wave table, useful to improve waveform rendering when
+    an oscillator with a much higher frequency than the fundamental is
+    included. Use cautiously since synthio expects a single wavelength to
+    be contained in a wave table. Defaults to 1.0.
+    :param boolean loop_smoothing: Smooth the transition between the start
+    and end of the waveform table to reduce loop distortion. Defaults
+    to ``True`` (smooth the last two sample values in the waveform table).
+    :param bool debug: A boolean value to enable debug print messages.
+    Defaults to ``False`` (no debug print messages)."""
+
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         oscillators,
@@ -52,35 +82,6 @@ class WaveBuilder:
         loop_smoothing=True,
         debug=False,
     ):
-        """The WaveBuilder class creates a composite ``synthio`` waveform table
-        from a collection of oscillators. The table is created from a list
-        of oscillator characteristics, sample length, maximum sample value, a
-        lambda factor, and loop smoothing parameters. The resulting waveform
-        table is a ``synthio.ReadableBuffer`` of type ‘h’ (signed 16 bit).
-
-        :param list oscillators: A list of oscillator characteristics. Each
-        oscillator is described as a tuple of wave shape, frequency or
-        overtone ratio, and amplitude. The wave shape is specified by using
-        a member of the ``WaveShape`` class (type: string). The floating point
-        oscillator frequency is defined as either a frequency in Hertz or
-        overtone ratio based on the fundamental (lowest) frequency. The
-        amplitude is a floating point value between 0. and 1.0 although any
-        value is allowed. No default.
-        :param integer table_length: The number of samples contained in the
-        resultant waveform table. No default.
-        :param integer sample_max: The maximum positive value of a sample,
-        limited to a signed 16-bit integer value (0 to 32767). Default is 32767.
-        :param float lambda_factor: The number of fundamental oscillator
-        wavelengths per wave table, useful to improve waveform rendering when
-        an oscillator with a much higher frequency than the fundamental is
-        included. Use cautiously since synthio expects a single wavelength to
-        be contained in a wave table. Defaults to 1.0.
-        :param boolean loop_smoothing: Smooth the transition between the start
-        and end of the waveform table to reduce loop distortion. Defaults
-        to ``True`` (smooth the last two sample values in the waveform table).
-        :param bool debug: A boolean value to enable debug print messages.
-        Defaults to ``False`` (no debug print messages)."""
-
         self._oscillators = oscillators
         self._table_length = table_length
         self._sample_max = sample_max
@@ -170,6 +171,7 @@ class WaveBuilder:
         """The sum of all oscillator amplitudes."""
         return self._summed_amplitude
 
+    # pylint: disable=unused-argument
     def _noise_wave(self, ratio, amplitude):
         """Returns a sample array with a noise waveform adjusted to a specified amplitude."""
         _temporary = np.array(
@@ -310,6 +312,7 @@ class WaveBuilder:
         _temporary = _temporary[: self._table_length]
         return _temporary
 
+    # pylint: disable=consider-using-generator
     def _update_table(self):
         # Replace frequencies in _oscillators with ratios based on the fundamental
         fundamental_frequency = min([freq for _, freq, _ in self._oscillators])
@@ -344,7 +347,7 @@ class WaveBuilder:
 
         # Add oscillator waveforms to an empty self._waveform wave table array
         self._waveform = np.zeros(self._table_length, dtype=np.int16)
-        for i, (wave_type, ratio, amplitude) in enumerate(self._oscillators):
+        for wave_type, ratio, amplitude in self._oscillators:
             if wave_type == WaveShape.Noise:
                 self._waveform = self._waveform + self._noise_wave(ratio, amplitude)
             if wave_type == WaveShape.Saw:
