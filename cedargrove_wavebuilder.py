@@ -12,7 +12,7 @@ https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder
 Acknowledgement and thanks to:
 * Liz Clark, 'Circle of Fifths Euclidean Synth with synthio and CircuitPython'
   for example waveform and noise methods;
-* Todd Kurt for fundamentally essential ``synthio`` hints, tricks, and examples
+* Todd Kurt for essential ``synthio`` hints, tricks, and examples
   (https://github.com/todbot/circuitpython-synthio-tricks).
 * Special thanks to Jeff Epler for the comprehensive design and implementation
   of the CircuitPython ``synthio`` module.

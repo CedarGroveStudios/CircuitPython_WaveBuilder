@@ -45,12 +45,22 @@ mixer = audiomixer.Mixer(
 audio_output.play(mixer)
 mixer.voice[0].level = 0.50
 
-synth = synthio.Synthesizer(sample_rate=SAMPLE_RATE, waveform=wave.wave_table)
+synth = synthio.Synthesizer(sample_rate=SAMPLE_RATE)
 mixer.play(synth)
 
-note_1 = synthio.Note(880, envelope=tone_envelope)
+note_1 = synthio.Note(880, envelope=tone_envelope, waveform=wave.wave_table)
 
 while True:
+    # Set the note waveform to sine and play the note
+    wave.oscillators = [(WaveShape.Sine, 1.0, 0.6)]
+    note_1.waveform = wave.wave_table
     synth.press(note_1)
     synth.release(note_1)
-    time.sleep(0.5)
+    time.sleep(1)
+
+    # Set the note waveform to square and play the note
+    wave.oscillators = [(WaveShape.Saw, 1.0, 0.6)]
+    note_1.waveform = wave.wave_table
+    synth.press(note_1)
+    synth.release(note_1)
+    time.sleep(1)
