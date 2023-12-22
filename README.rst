@@ -117,8 +117,9 @@ Some Patch Symbols were modified to create the synthio symbols ``BlockInput``, `
 
 Planned Updates
 ---------------
-* Add wave table file saving and inclusion.
-* Include other wave types.
+* Add wave table file saving.
+* Open external file as the fundamental wave table.
+* Include other preset wave types.
 * Add examples for filtering and applying ``synthio.Math`` to wave tables.
 
 Acknowledgements and Thanks
