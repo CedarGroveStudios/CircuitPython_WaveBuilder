@@ -315,12 +315,12 @@ class WaveBuilder:
     # pylint: disable=consider-using-generator
     def _update_table(self):
         # Replace frequencies in _oscillators with ratios based on the fundamental
-        fundamental_frequency = min([freq for _, freq, _ in self._oscillators])
+        fundamental_frequency = min([osc[1] for osc in self._oscillators])
         self._oscillators = [
             (t, freq / fundamental_frequency, a) for t, freq, a in self._oscillators
         ]
 
-        self._summed_amplitude = sum([a for _, _, a in self._oscillators])
+        self._summed_amplitude = sum([osc[2] for osc in self._oscillators])
 
         # Test each oscillator ratio to confirm that table_length has sufficient resolution
         for overtone in self._oscillators:
