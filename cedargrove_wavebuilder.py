@@ -33,7 +33,7 @@ import ulab.numpy as np
 
 # pylint: disable=too-few-public-methods
 class WaveShape:
-    """The four predefined wave shapes."""
+    """The predefined wave shapes."""
 
     Noise = "noise"
     Saw = "saw"
@@ -54,8 +54,8 @@ class WaveBuilder:
     ):
         """The WaveBuilder class creates a composite ``synthio`` waveform table
         from a collection of oscillators. The table is created from a list
-        of oscillator characteristics tuples, sample length, maximum sample
-        value, a lambda factor, and loop smoothing parameters. The waveform
+        of oscillator characteristics, sample length, maximum sample value, a
+        lambda factor, and loop smoothing parameters. The resulting waveform
         table is a ``synthio.ReadableBuffer`` of type ‘h’ (signed 16 bit).
 
         :param list oscillators: A list of oscillator characteristics. Each
@@ -170,7 +170,7 @@ class WaveBuilder:
         """The sum of all oscillator amplitudes."""
         return self._summed_amplitude
 
-    def noise_wave(self, ratio, amplitude):
+    def _noise_wave(self, ratio, amplitude):
         """Returns a sample array with a noise waveform adjusted to a specified amplitude."""
         _temporary = np.array(
             [
@@ -184,7 +184,7 @@ class WaveBuilder:
         )
         return _temporary
 
-    def saw_wave(self, ratio, amplitude):
+    def _saw_wave(self, ratio, amplitude):
         """Returns a waveform array with a saw wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
         _temporary = np.array([], dtype=np.int16)  # Create a zero-length array
@@ -217,7 +217,7 @@ class WaveBuilder:
         _temporary = _temporary[: self._table_length]
         return _temporary
 
-    def sine_wave(self, ratio, amplitude):
+    def _sine_wave(self, ratio, amplitude):
         """Returns a waveform array with a sine wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
         _temporary = np.array(
@@ -235,7 +235,7 @@ class WaveBuilder:
         )
         return _temporary
 
-    def square_wave(self, ratio, amplitude):
+    def _square_wave(self, ratio, amplitude):
         """Returns a waveform array with a square wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
         # Create a zero-length temporary array
@@ -262,7 +262,7 @@ class WaveBuilder:
         _temporary = _temporary[: self._table_length]
         return _temporary
 
-    def triangle_wave(self, ratio, amplitude):
+    def _triangle_wave(self, ratio, amplitude):
         """Returns a waveform array with a triangle wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
         # Create a zero-length temporary array
@@ -346,15 +346,15 @@ class WaveBuilder:
         self._waveform = np.zeros(self._table_length, dtype=np.int16)
         for i, (wave_type, ratio, amplitude) in enumerate(self._oscillators):
             if wave_type == WaveShape.Noise:
-                self._waveform = self._waveform + self.noise_wave(ratio, amplitude)
+                self._waveform = self._waveform + self._noise_wave(ratio, amplitude)
             if wave_type == WaveShape.Saw:
-                self._waveform = self._waveform + self.saw_wave(ratio, amplitude)
+                self._waveform = self._waveform + self._saw_wave(ratio, amplitude)
             if wave_type == WaveShape.Sine:
-                self._waveform = self._waveform + self.sine_wave(ratio, amplitude)
+                self._waveform = self._waveform + self._sine_wave(ratio, amplitude)
             if wave_type == WaveShape.Square:
-                self._waveform = self._waveform + self.square_wave(ratio, amplitude)
+                self._waveform = self._waveform + self._square_wave(ratio, amplitude)
             if wave_type == WaveShape.Triangle:
-                self._waveform = self._waveform + self.triangle_wave(ratio, amplitude)
+                self._waveform = self._waveform + self._triangle_wave(ratio, amplitude)
 
         if self._loop_smoothing:
             # Reduce loop distortion by smoothing the last 2 elements of the array
