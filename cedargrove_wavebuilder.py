@@ -359,7 +359,7 @@ class WaveBuilder:
             if wave_type == WaveShape.Triangle:
                 self._waveform = self._waveform + self._triangle_wave(ratio, amplitude)
 
-        if self._loop_smoothing:
+        if self._loop_smoothing and (self._waveform[-1] != self._waveform[0]):
             # Reduce loop distortion by smoothing the last 2 elements of the array
             self._waveform[-2] = int((self._waveform[-2] + self._waveform[0]) / 2)
             self._waveform[-1] = self._waveform[0]
