@@ -13,7 +13,7 @@ Introduction
     :target: https://github.com/psf/black
     :alt: Code Style: Black
 
-A CircuitPython class to construct a composite ``synthio`` waveform table
+A CircuitPython class to construct a composite ``synthio`` wave table
 from a collection of oscillators. The table is created from a list
 of oscillator characteristics, sample length, maximum sample
 value, a lambda factor, and loop smoothing parameters.
