@@ -60,7 +60,8 @@ class WaveBuilder:
     :param integer table_length: The number of samples contained in the
     resultant waveform table. No default.
     :param integer sample_max: The maximum positive value of a sample,
-    limited to a signed 16-bit integer value (0 to 32767). Default is 32767.
+    limited to a signed 16-bit integer value (0 to 32767). The maximum
+    negative value will be derived from this value. Default is 32767.
     :param float lambda_factor: The number of fundamental oscillator
     wavelengths per wave table, useful to improve waveform rendering when
     an oscillator with a much higher frequency than the fundamental is
