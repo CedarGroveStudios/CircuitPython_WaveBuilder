@@ -1,3 +1,0 @@
-[submodule "libraries/helpers/wavebuilder"]
-	path = libraries/helpers/wavebuilder
-	url = https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder.git
