@@ -53,7 +53,7 @@ chime_envelope = synthio.Envelope(
 
 # Configure synthesizer for I2S output on a Feather S2
 audio_output = audiobusio.I2SOut(
-    bit_clock=board.D12, word_select=board.D9, data=board.D6, left_justified=False
+    bit_clock=board.D19, word_select=board.D18, data=board.D17, left_justified=False
 )
 mixer = audiomixer.Mixer(
     sample_rate=SAMPLE_RATE, buffer_size=4096, voice_count=1, channel_count=1
