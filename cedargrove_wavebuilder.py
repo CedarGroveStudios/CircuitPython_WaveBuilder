@@ -55,9 +55,9 @@ class WaveBuilder:
     a member of the ``WaveShape`` class (type: string). The floating point
     oscillator frequency is defined as either a frequency in Hertz or
     overtone ratio based on the fundamental (lowest) frequency. The
-    amplitude is a floating point value between 0.0 and 1.0 (inclusive).
-    Amplitude values outside the range will produce overflow effects
-    that may be unwanted. No default.
+    amplitude is a floating point value between -1.0 and 1.0 (inclusive).
+    Amplitude values less than zero will flip the phase of the resultant
+    oscillator waveform 180 degrees. No default.
     :param integer table_length: The number of samples contained in the
     resultant waveform table. No default.
     :param integer sample_max: The maximum positive value of a sample,
@@ -86,7 +86,7 @@ class WaveBuilder:
     ):
         self._oscillators = oscillators
         self._table_length = table_length
-        self._sample_max = sample_max
+        self._sample_max = int(sample_max)
         self._lambda_factor = lambda_factor
         self._loop_smoothing = loop_smoothing
         self._debug = debug
@@ -118,11 +118,11 @@ class WaveBuilder:
     def sample_max(self):
         """The maximum positive value of a sample, limited to a signed
         16-bit integer value (0 to 32767)."""
-        return self._sample_max
+        return int(self._sample_max)
 
     @sample_max.setter
     def sample_max(self, new_sample_max=32767):
-        self._sample_max = new_sample_max
+        self._sample_max = int(new_sample_max)
         self._update_table()
 
     @property
@@ -176,12 +176,12 @@ class WaveBuilder:
     # pylint: disable=unused-argument
     def _noise_wave(self, ratio, amplitude):
         """Returns a sample array with a noise waveform adjusted to a specified amplitude."""
+        amp_factor = abs(
+            min(int(round(self._sample_max * amplitude, 0)), self._sample_max)
+        )
         _temporary = np.array(
             [
-                random.randint(
-                    int(-self._sample_max * amplitude),
-                    int(self._sample_max * amplitude),
-                )
+                random.randint(-amp_factor, amp_factor)
                 for _ in range(self._table_length)
             ],
             dtype=np.int16,
@@ -191,6 +191,7 @@ class WaveBuilder:
     def _saw_wave(self, ratio, amplitude):
         """Returns a waveform array with a saw wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
+        amp_factor = min(int(round(self._sample_max * amplitude, 0)), self._sample_max)
         _temporary = np.array([], dtype=np.int16)  # Create a zero-length array
 
         # Calculate the array length and subtract the initial zero element
@@ -203,13 +204,13 @@ class WaveBuilder:
                     _temporary,
                     np.linspace(
                         0,
-                        int(self._sample_max * amplitude),
+                        int(amp_factor),
                         half_lambda - 1,
                         dtype=np.int16,
                     ),
                     np.array([0], dtype=np.int16),
                     np.linspace(
-                        int(-self._sample_max * amplitude),
+                        int(-amp_factor),
                         0,
                         half_lambda - 1,
                         dtype=np.int16,
@@ -224,6 +225,7 @@ class WaveBuilder:
     def _sine_wave(self, ratio, amplitude):
         """Returns a waveform array with a sine wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
+        amp_factor = min(int(round(self._sample_max * amplitude, 0)), self._sample_max)
         _temporary = np.array(
             np.sin(
                 np.linspace(
@@ -233,8 +235,7 @@ class WaveBuilder:
                     endpoint=False,
                 )
             )
-            * amplitude
-            * self._sample_max,
+            * amp_factor,
             dtype=np.int16,
         )
         return _temporary
@@ -242,6 +243,7 @@ class WaveBuilder:
     def _square_wave(self, ratio, amplitude):
         """Returns a waveform array with a square wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
+        amp_factor = min(int(round(self._sample_max * amplitude, 0)), self._sample_max)
         # Create a zero-length temporary array
         _temporary = np.array([], dtype=np.int16)
 
@@ -254,11 +256,9 @@ class WaveBuilder:
                 (
                     _temporary,
                     np.array([0], dtype=np.int16),
-                    np.ones(half_lambda - 1, dtype=np.int16)
-                    * int(self._sample_max * amplitude),
+                    np.ones(half_lambda - 1, dtype=np.int16) * int(amp_factor),
                     np.array([0], dtype=np.int16),
-                    np.ones(half_lambda - 1, dtype=np.int16)
-                    * int(-self._sample_max * amplitude),
+                    np.ones(half_lambda - 1, dtype=np.int16) * int(-amp_factor),
                 )
             )
 
@@ -269,6 +269,7 @@ class WaveBuilder:
     def _triangle_wave(self, ratio, amplitude):
         """Returns a waveform array with a triangle wave waveform proportional
         to the frequency ratio and adjusted to a specified amplitude."""
+        amp_factor = min(int(round(self._sample_max * amplitude, 0)), self._sample_max)
         # Create a zero-length temporary array
         _temporary = np.array([], dtype=np.int16)
 
@@ -276,7 +277,7 @@ class WaveBuilder:
         quarter_lambda = int((self._table_length / (self._lambda_factor * 4)) / ratio)
 
         # Calculate a one-step increment for even quarter-lambda segments
-        increment = int(self._sample_max / quarter_lambda * amplitude)
+        increment = int(amp_factor / quarter_lambda)
 
         # Build the waveform array from a full-lambda waveform
         while len(_temporary) < self._table_length:
@@ -285,24 +286,24 @@ class WaveBuilder:
                     _temporary,
                     np.linspace(
                         0,
-                        int(round(self._sample_max * amplitude, 0)),
+                        amp_factor,
                         quarter_lambda,
                         dtype=np.int16,
                     ),
                     np.linspace(
-                        int(round(self._sample_max * amplitude, 0)) - increment,
+                        amp_factor - increment,
                         0,
                         quarter_lambda,
                         dtype=np.int16,
                     ),
                     np.linspace(
                         0 - increment,
-                        int(round(-self._sample_max * amplitude, 0)),
+                        -amp_factor,
                         quarter_lambda,
                         dtype=np.int16,
                     ),
                     np.linspace(
-                        int(round(-self._sample_max * amplitude, 0)) + increment,
+                        -amp_factor + increment,
                         0 - increment,
                         quarter_lambda,
                         dtype=np.int16,
@@ -322,7 +323,9 @@ class WaveBuilder:
             (t, freq / fundamental_frequency, a) for t, freq, a in self._oscillators
         ]
 
-        self._summed_amplitude = sum([osc[2] for osc in self._oscillators])
+        self._summed_amplitude = sum([abs(osc[2]) for osc in self._oscillators])
+        if self._summed_amplitude > 1.0:
+            raise ValueError(f"Summed amplitude of oscillators exceeds 1.0.")
 
         # Test each oscillator ratio to confirm that table_length has sufficient resolution
         for overtone in self._oscillators:
