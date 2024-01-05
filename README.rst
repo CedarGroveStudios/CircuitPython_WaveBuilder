@@ -106,9 +106,9 @@ Documentation
 -------------
 API documentation for this library can be found in `Cedargrove_WaveBuilder <https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/blob/main/media/pseudo_rtd_cedargrove_wavebuilder.pdf>`_.
 
-.. image:: https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/blob/main/media/wavebuilder_api_page1.png
+.. image:: https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/blob/main/media/wavebuilder_api_page1a.png
 
-.. image:: https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/blob/main/media/wavebuilder_api_page2.png
+.. image:: https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/blob/main/media/wavebuilder_api_page2a.png
 
 For additional detail about ``WaveBuilder``, see `Construct a synthio Waveform Object from a List of Oscillators <https://adafruit-playground.com/u/CGrover/pages/construct-a-synthio-waveform-object-from-a-list-of-oscillators>`_
 
