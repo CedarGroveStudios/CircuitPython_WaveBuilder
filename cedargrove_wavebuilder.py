@@ -316,6 +316,7 @@ class WaveBuilder:
         return _temporary
 
     # pylint: disable=consider-using-generator
+    # pylint: disable=too-many-branches
     def _update_table(self):
         # Replace frequencies in _oscillators with ratios based on the fundamental
         fundamental_frequency = min([osc[1] for osc in self._oscillators])
@@ -325,7 +326,7 @@ class WaveBuilder:
 
         self._summed_amplitude = sum([abs(osc[2]) for osc in self._oscillators])
         if self._summed_amplitude > 1.0:
-            raise ValueError(f"Summed amplitude of oscillators exceeds 1.0.")
+            raise ValueError("Summed amplitude of oscillators exceeds 1.0.")
 
         # Test each oscillator ratio to confirm that table_length has sufficient resolution
         for overtone in self._oscillators:
