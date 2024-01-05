@@ -11,7 +11,7 @@ from cedargrove_wavebuilder import WaveBuilder, WaveShape
 # Define synth parameters
 SAMPLE_RATE = 22050  # The sample rate in SPS
 WAVE_TABLE_LENGTH = 512  # The wave table length in samples
-SAMPLE_MAXIMUM = 35000  # The maximum value of a sample
+SAMPLE_MAXIMUM = 32700  # The maximum value of a sample
 
 # Define the oscillator wave shape, overtone ratio, and amplitude
 tone = [(WaveShape.Sine, 1.0, 0.6)]

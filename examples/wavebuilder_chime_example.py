@@ -32,7 +32,7 @@ chimes = [
 wave = WaveBuilder(
     oscillators=chimes,
     table_length=WAVE_TABLE_LENGTH,
-    sample_max=35000,
+    sample_max=32700,
     lambda_factor=1,
     loop_smoothing=True,
 )

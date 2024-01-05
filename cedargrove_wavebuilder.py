@@ -55,8 +55,9 @@ class WaveBuilder:
     a member of the ``WaveShape`` class (type: string). The floating point
     oscillator frequency is defined as either a frequency in Hertz or
     overtone ratio based on the fundamental (lowest) frequency. The
-    amplitude is a floating point value between 0. and 1.0 although any
-    value is allowed. No default.
+    amplitude is a floating point value between 0.0 and 1.0 (inclusive).
+    Amplitude values outside the range will produce overflow effects
+    that may be unwanted. No default.
     :param integer table_length: The number of samples contained in the
     resultant waveform table. No default.
     :param integer sample_max: The maximum positive value of a sample,
