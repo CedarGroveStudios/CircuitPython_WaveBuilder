@@ -38,6 +38,7 @@ class WaveTile(displayio.Group):
     :param integer grid_color: The perimeter grid color. Defaults to 0x808080 (gray).
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self, wave_table, origin, size, plot_color=0x00FF00, grid_color=0x808080
     ):
@@ -99,7 +100,6 @@ class WaveTile(displayio.Group):
                 self._colors[0],
             )
         )
-        return
 
     def _plot_grid(self):
         """Plot the window grid lines."""
