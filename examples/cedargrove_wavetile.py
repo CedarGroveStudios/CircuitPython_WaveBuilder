@@ -41,6 +41,7 @@ class WaveTile(displayio.Group):
     :param integer scale: The displayio.Group scale factor. Defaults to 1.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         wave_table,
@@ -110,7 +111,6 @@ class WaveTile(displayio.Group):
                 color=self._colors[0],
             )
         )
-        return
 
     def _plot_grid(self):
         """Plot the window grid lines."""
