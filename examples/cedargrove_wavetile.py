@@ -24,7 +24,8 @@ from adafruit_display_shapes.line import Line
 
 
 class WaveTile(displayio.Group):
-    """The WaveTile class creates a displayio.Group "tile" from a composite
+    """
+    The WaveTile class creates a displayio.Group "tile" from a composite
     ``synthio`` waveform table. The tile is created from size and color parameters.
 
     :param synthio.ReadableBuffer wave_table: The synthio waveform object of type 'h'
@@ -36,20 +37,29 @@ class WaveTile(displayio.Group):
     No default.
     :param integer plot_color: The waveform trace color. Defaults to 0x00FF00 (green).
     :param integer grid_color: The perimeter grid color. Defaults to 0x808080 (gray).
+    :param integer back_color: The grid background color. Defaults to None (transparent).
+    :param integer scale: The displayio.Group scale factor. Defaults to 1.
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
-        self, wave_table, origin, size, plot_color=0x00FF00, grid_color=0x808080
+        self,
+        wave_table,
+        origin,
+        size,
+        plot_color=0x00FF00,
+        grid_color=0x808080,
+        back_color=None,
+        scale=1,
     ):
         """Instantiate the tile generator class."""
         self._wave_table = wave_table
         self._origin = origin
         self._size = size
-        self._colors = [plot_color, grid_color]
+        self._colors = [plot_color, grid_color, back_color]
+        self._scale = scale
         self._next_point = (0, 0)  # Initialize the first point in the wave plot
 
-        super().__init__()  # self becomes a displayio.Group
+        super().__init__(scale=self._scale)  # self becomes a displayio.Group
         self._plot_grid()  # Plot the grid
         self._plot_wave()  # Plot the wave
 
@@ -78,13 +88,13 @@ class WaveTile(displayio.Group):
 
             self.append(
                 Line(
-                    self._prev_point[0] + self._origin[0],
-                    self._origin[1]
+                    x0=self._prev_point[0] + self._origin[0],
+                    y0=self._origin[1]
                     + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
-                    self._next_point[0] + self._origin[0],
-                    self._origin[1]
+                    x1=self._next_point[0] + self._origin[0],
+                    y1=self._origin[1]
                     + (-int(self._wave_table[self._next_point[1]] * scale_y)),
-                    self._colors[0],
+                    color=self._colors[0],
                 )
             )
             self._prev_point = self._next_point
@@ -92,32 +102,34 @@ class WaveTile(displayio.Group):
         # Always plot the final point
         self.append(
             Line(
-                self._prev_point[0] + self._origin[0],
-                self._origin[1]
+                x0=self._prev_point[0] + self._origin[0],
+                y0=self._origin[1]
                 + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
-                self._next_point[0] + self._origin[0],
-                self._origin[1] + (-int(self._wave_table[-1] * scale_y)),
-                self._colors[0],
+                x1=self._next_point[0] + self._origin[0],
+                y1=self._origin[1] + (-int(self._wave_table[-1] * scale_y)),
+                color=self._colors[0],
             )
         )
+        return
 
     def _plot_grid(self):
         """Plot the window grid lines."""
         self.append(
             Rect(
-                self._origin[0],
-                self._origin[1] - (self._size[1] // 2),
-                self._size[0],
-                self._size[1],
+                x=self._origin[0],
+                y=self._origin[1] - (self._size[1] // 2),
+                width=self._size[0],
+                height=self._size[1],
+                fill=self._colors[2],
                 outline=self._colors[1],
             )
         )
         self.append(
             Line(
-                self._origin[0],
-                self._origin[1],
-                self._origin[0] + self._size[0],
-                self._origin[1],
-                self._colors[1],
+                x0=self._origin[0],
+                y0=self._origin[1],
+                x1=self._origin[0] + self._size[0],
+                y1=self._origin[1],
+                color=self._colors[1],
             )
         )
