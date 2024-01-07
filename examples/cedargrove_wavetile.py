@@ -4,8 +4,9 @@
 """
 `cedargrove_wavetile`
 ===============================================================================
-A CircuitPython class to create a ``displayio.TileGrid`` graphic object from a
-``synthio.ReadableBuffer`` composite wave table object.
+A CircuitPython class to create a ``displayio.Group`` graphic object from a
+``synthio.ReadableBuffer`` composite wave table object. The class also makes
+the underlying bitmap object available as a property.
 https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/examples
 
 * Author(s): JG for Cedar Grove Maker Studios
@@ -29,10 +30,9 @@ class WaveTile(displayio.Group):
 
     :param synthio.ReadableBuffer wave_table: The synthio waveform object of type 'h'
     (signed 16-bit). No default.
-    :param tuple origin: The group's origin coordinate integer value (x, y). The
-    origin is where the x-axis and y-axis cross at the middle left side of the group.
-    No default.
-    :param tuple size: The group size (width, height) integer value in pixels.
+    :param tuple origin: The group's origin coordinate integer tuple value (x, y). The
+    origin is the top left corner of the resultant group. No default.
+    :param tuple size: The group size integer tuple value (width, height) in pixels.
     No default.
     :param integer plot_color: The waveform trace color. Defaults to 0x00FF00 (green).
     :param integer grid_color: The perimeter grid color. Defaults to 0x808080 (gray).
@@ -71,8 +71,8 @@ class WaveTile(displayio.Group):
         super().__init__(scale=self._scale, x=self._origin[0], y=self._origin[1])
         self._plot_grid()  # Plot the grid
         self._plot_wave()  # Plot the wave table
-        tg = displayio.TileGrid(self._bmp, pixel_shader=self._palette)
-        self.append(tg)
+        self._tile_grid = displayio.TileGrid(self._bmp, pixel_shader=self._palette)
+        self.append(self._tile_grid)
 
     @property
     def wave_table(self):
@@ -85,8 +85,13 @@ class WaveTile(displayio.Group):
         self._plot_grid()
         self._plot_wave()
 
+    @property
+    def wave_bitmap(self):
+        """The wave table plot bitmap."""
+        return self._bmp
+
     def _plot_wave(self):
-        """Plot the wave_table using bitmaptools.draw_line()"""
+        """Plot the wave_table as a bitmap."""
         samples = len(self._wave_table)
         max_value = max(abs(min(self._wave_table)), abs(max(self._wave_table)))
         scale_y = self._size[1] / max_value / 2
@@ -101,10 +106,10 @@ class WaveTile(displayio.Group):
                 self._bmp,
                 self._prev_point[0],
                 (self._size[1] // 2)
-                + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
+                + (-int(round(self._wave_table[self._prev_point[1]] * scale_y, 0))),
                 self._next_point[0],
                 (self._size[1] // 2)
-                + (-int(self._wave_table[self._next_point[1]] * scale_y)),
+                + (-int(round(self._wave_table[self._next_point[1]] * scale_y, 0))),
                 1,
             )
 
@@ -115,14 +120,14 @@ class WaveTile(displayio.Group):
             self._bmp,
             self._prev_point[0],
             (self._size[1] // 2)
-            + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
+            + (-int(round(self._wave_table[self._prev_point[1]] * scale_y, 0))),
             self._next_point[0],
-            (self._size[1] // 2) + (-int(self._wave_table[-1] * scale_y)),
+            (self._size[1] // 2) + (-int(round(self._wave_table[-1] * scale_y, 0))),
             1,
         )
 
     def _plot_grid(self):
-        """Plot the grid lines."""
+        """Plot the grid lines as a bitmap."""
         bitmaptools.draw_line(
             self._bmp,
             0,
