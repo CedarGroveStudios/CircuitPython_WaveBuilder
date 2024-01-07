@@ -4,7 +4,7 @@
 """
 `cedargrove_wavetile`
 ===============================================================================
-A CircuitPython class to create a ``displayio.Group`` graphic object from a
+A CircuitPython class to create a ``displayio.TileGrid`` graphic object from a
 ``synthio.ReadableBuffer`` composite wave table object.
 https://github.com/CedarGroveStudios/CircuitPython_WaveBuilder/examples
 
@@ -19,26 +19,25 @@ Implementation Notes
 """
 
 import displayio
-from adafruit_display_shapes.rect import Rect
-from adafruit_display_shapes.line import Line
+import bitmaptools
 
 
 class WaveTile(displayio.Group):
     """
-    The WaveTile class creates a displayio.Group "tile" from a composite
-    ``synthio`` waveform table. The tile is created from size and color parameters.
+    The WaveTile class creates a displayio.Group from a composite
+    ``synthio`` waveform table. The group is created from size and color parameters.
 
     :param synthio.ReadableBuffer wave_table: The synthio waveform object of type 'h'
     (signed 16-bit). No default.
-    :param tuple origin: The tile's origin coordinate integer value (x, y). The
-    origin is where the x-axis and y-axis cross at the middle left side of the tile.
+    :param tuple origin: The group's origin coordinate integer value (x, y). The
+    origin is where the x-axis and y-axis cross at the middle left side of the group.
     No default.
-    :param tuple size: The tile size (width, height) integer value in pixels.
+    :param tuple size: The group size (width, height) integer value in pixels.
     No default.
     :param integer plot_color: The waveform trace color. Defaults to 0x00FF00 (green).
     :param integer grid_color: The perimeter grid color. Defaults to 0x808080 (gray).
     :param integer back_color: The grid background color. Defaults to None (transparent).
-    :param integer scale: The displayio.Group scale factor. Defaults to 1.
+    :param integer scale: The group scale factor. Defaults to 1.
     """
 
     # pylint: disable=too-many-arguments
@@ -56,13 +55,24 @@ class WaveTile(displayio.Group):
         self._wave_table = wave_table
         self._origin = origin
         self._size = size
-        self._colors = [plot_color, grid_color, back_color]
         self._scale = scale
-        self._next_point = (0, 0)  # Initialize the first point in the wave plot
 
-        super().__init__(scale=self._scale)  # self becomes a displayio.Group
+        self._palette = displayio.Palette(3)
+        self._palette[1] = plot_color
+        self._palette[2] = grid_color
+        if back_color is None:
+            self._palette[0] = 0x000000
+            self._palette.make_transparent(0)
+
+        # Instantiate the target bitmap
+        self._bmp = displayio.Bitmap(self._size[0], self._size[1], len(self._palette))
+
+        # self becomes a displayio.Group; plot grid and wave table
+        super().__init__(scale=self._scale, x=self._origin[0], y=self._origin[1])
         self._plot_grid()  # Plot the grid
-        self._plot_wave()  # Plot the wave
+        self._plot_wave()  # Plot the wave table
+        tg = displayio.TileGrid(self._bmp, pixel_shader=self._palette)
+        self.append(tg)
 
     @property
     def wave_table(self):
@@ -76,7 +86,7 @@ class WaveTile(displayio.Group):
         self._plot_wave()
 
     def _plot_wave(self):
-        """Plot the wave_table using a series of displayio.Line objects."""
+        """Plot the wave_table using bitmaptools.draw_line()"""
         samples = len(self._wave_table)
         max_value = max(abs(min(self._wave_table)), abs(max(self._wave_table)))
         scale_y = self._size[1] / max_value / 2
@@ -87,49 +97,69 @@ class WaveTile(displayio.Group):
             table_index = int(x * (samples / self._size[0]))
             self._next_point = (x, table_index)
 
-            self.append(
-                Line(
-                    x0=self._prev_point[0] + self._origin[0],
-                    y0=self._origin[1]
-                    + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
-                    x1=self._next_point[0] + self._origin[0],
-                    y1=self._origin[1]
-                    + (-int(self._wave_table[self._next_point[1]] * scale_y)),
-                    color=self._colors[0],
-                )
+            bitmaptools.draw_line(
+                self._bmp,
+                self._prev_point[0],
+                (self._size[1] // 2)
+                + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
+                self._next_point[0],
+                (self._size[1] // 2)
+                + (-int(self._wave_table[self._next_point[1]] * scale_y)),
+                1,
             )
+
             self._prev_point = self._next_point
 
         # Always plot the final point
-        self.append(
-            Line(
-                x0=self._prev_point[0] + self._origin[0],
-                y0=self._origin[1]
-                + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
-                x1=self._next_point[0] + self._origin[0],
-                y1=self._origin[1] + (-int(self._wave_table[-1] * scale_y)),
-                color=self._colors[0],
-            )
+        bitmaptools.draw_line(
+            self._bmp,
+            self._prev_point[0],
+            (self._size[1] // 2)
+            + (-int(self._wave_table[self._prev_point[1]] * scale_y)),
+            self._next_point[0],
+            (self._size[1] // 2) + (-int(self._wave_table[-1] * scale_y)),
+            1,
         )
 
     def _plot_grid(self):
-        """Plot the window grid lines."""
-        self.append(
-            Rect(
-                x=self._origin[0],
-                y=self._origin[1] - (self._size[1] // 2),
-                width=self._size[0],
-                height=self._size[1],
-                fill=self._colors[2],
-                outline=self._colors[1],
-            )
+        """Plot the grid lines."""
+        bitmaptools.draw_line(
+            self._bmp,
+            0,
+            0,
+            self._size[0] - 1,
+            0,
+            2,
         )
-        self.append(
-            Line(
-                x0=self._origin[0],
-                y0=self._origin[1],
-                x1=self._origin[0] + self._size[0],
-                y1=self._origin[1],
-                color=self._colors[1],
-            )
+        bitmaptools.draw_line(
+            self._bmp,
+            self._size[0] - 1,
+            0,
+            self._size[0] - 1,
+            self._size[1] - 1,
+            2,
+        )
+        bitmaptools.draw_line(
+            self._bmp,
+            self._size[0] - 1,
+            self._size[1] - 1,
+            0,
+            self._size[1] - 1,
+            2,
+        )
+        bitmaptools.draw_line(
+            self._bmp,
+            0,
+            self._size[1] - 1,
+            0,
+            0,
+            2,
+        )
+        bitmaptools.draw_line(
+            self._bmp,
+            0,
+            self._size[1] // 2,
+            self._size[0],
+            self._size[1] // 2,
+            2,
         )
