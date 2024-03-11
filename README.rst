@@ -31,7 +31,7 @@ or individual libraries can be installed using
 `circup <https://github.com/adafruit/circup>`_.
 
 Installing to a Connected CircuitPython Device with Circup
-==========================================================
+----------------------------------------------------------
 
 Make sure that you have ``circup`` installed in your Python environment.
 Install it with the following command if necessary:
